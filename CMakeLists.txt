@@ -11,8 +11,8 @@ add_library(imgui_implot OBJECT
 )
 
 target_include_directories(imgui_implot PUBLIC
-    include
+    "."
 )
 
 target_link_libraries(imgui_implot PRIVATE imgui_includes)
-target_include_directories(imgui_all_includes INTERFACE include)
+target_include_directories(imgui_all_includes INTERFACE ".")
