@@ -91,18 +91,44 @@ static IMPLOT_INLINE float  ImInvSqrt(float x) { return 1.0f / sqrtf(x); }
 #ifdef IMPLOT_CUSTOM_NUMERIC_TYPES
     #define IMPLOT_NUMERIC_TYPES IMPLOT_CUSTOM_NUMERIC_TYPES
 #else
-    #define IMPLOT_NUMERIC_TYPES (ImS8)(ImU8)(ImS16)(ImU16)(ImS32)(ImU32)(ImS64)(ImU64)(float)(double)
+    #define IMPLOT_NUMERIC_TYPES (ImS8)(ImU8)(ImS16)(ImU16)(ImS32)(ImU32)(ImS64)(ImU64)(float)(double)(uint8_t)
 #endif
 
 // CALL_INSTANTIATE_FOR_NUMERIC_TYPES will duplicate the template instantion code `INSTANTIATE_MACRO(T)` on supported types.
+#define _EXPAND(...) __VA_ARGS__
 #define _CAT(x, y) _CAT_(x, y)
-#define _CAT_(x,y) x ## y
+#define _CAT_(x, y) x##y
+
 #define _INSTANTIATE_FOR_NUMERIC_TYPES(chain) _CAT(_INSTANTIATE_FOR_NUMERIC_TYPES_1 chain, _END)
 #define _INSTANTIATE_FOR_NUMERIC_TYPES_1(T) INSTANTIATE_MACRO(T) _INSTANTIATE_FOR_NUMERIC_TYPES_2
 #define _INSTANTIATE_FOR_NUMERIC_TYPES_2(T) INSTANTIATE_MACRO(T) _INSTANTIATE_FOR_NUMERIC_TYPES_1
 #define _INSTANTIATE_FOR_NUMERIC_TYPES_1_END
 #define _INSTANTIATE_FOR_NUMERIC_TYPES_2_END
 #define CALL_INSTANTIATE_FOR_NUMERIC_TYPES() _INSTANTIATE_FOR_NUMERIC_TYPES(IMPLOT_NUMERIC_TYPES)
+
+// Iterate over all Y types for a single X type
+#define _FOR_EACH_Y(T, macro) \
+    macro(T, float)           \
+    macro(T, double)          \
+    macro(T, int)            \
+    macro(T, unsigned int)   \
+    macro(T, short)          \
+    macro(T, unsigned short) \
+    macro(T, char)           \
+    macro(T, unsigned char)  \
+    macro(T, long long)
+
+// Iterate over all X types
+#define _FOR_EACH_XY(macro) \
+    _FOR_EACH_Y(float, macro) \
+    _FOR_EACH_Y(double, macro) \
+    _FOR_EACH_Y(int, macro) \
+    _FOR_EACH_Y(unsigned int, macro) \
+    _FOR_EACH_Y(short, macro) \
+    _FOR_EACH_Y(unsigned short, macro) \
+    _FOR_EACH_Y(char, macro) \
+    _FOR_EACH_Y(unsigned char, macro) \
+    _FOR_EACH_Y(long long, macro)
 
 namespace ImPlot {
 
@@ -1625,10 +1651,23 @@ void PlotLine(const char* label_id, const T* xs, const T* ys, int count, ImPlotL
     PlotLineEx(label_id, getter, flags);
 }
 
+template <typename T, typename U>
+void PlotLine(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags, int offset, int stride_x, int stride_y) {
+    GetterXY<IndexerIdx<T>, IndexerIdx<U>> getter(IndexerIdx<T>(xs, count, offset, stride_x), IndexerIdx<U>(ys, count, offset, stride_y), count);
+    PlotLineEx(label_id, getter, flags);
+}
+
 #define INSTANTIATE_MACRO(T) \
     template IMPLOT_API void PlotLine<T> (const char* label_id, const T* values, int count, double xscale, double x0, ImPlotLineFlags flags, int offset, int stride); \
     template IMPLOT_API void PlotLine<T>(const char* label_id, const T* xs, const T* ys, int count, ImPlotLineFlags flags, int offset, int stride);
 CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
+#undef INSTANTIATE_MACRO
+
+// Mixed-type instantiation
+#define INSTANTIATE_MACRO(T, U) \
+    template IMPLOT_API void PlotLine<T, U>(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags, int offset, int stride_x, int stride_y); \
+
+_FOR_EACH_XY(INSTANTIATE_MACRO) // needs the newline above
 #undef INSTANTIATE_MACRO
 
 // custom
@@ -1801,11 +1840,25 @@ void PlotShaded(const char* label_id, const T* xs, const T* ys1, const T* ys2, i
     PlotShadedEx(label_id, getter1, getter2, flags);
 }
 
+template<typename T, typename U>
+void PlotShaded(const char* label_id, const T* xs, const U* ys1, const U* ys2, int count, ImPlotShadedFlags flags, int offset, int stride_x, int stride_y) {
+    GetterXY<IndexerIdx<T>, IndexerIdx<U>> getter1(IndexerIdx<T>(xs, count, offset, stride_x), IndexerIdx<U>(ys1, count, offset, stride_y), count);
+    GetterXY<IndexerIdx<T>, IndexerIdx<U>> getter2(IndexerIdx<T>(xs, count, offset, stride_x), IndexerIdx<U>(ys2, count, offset, stride_y), count);
+    PlotShadedEx(label_id, getter1, getter2, flags);
+}
+
 #define INSTANTIATE_MACRO(T) \
     template IMPLOT_API void PlotShaded<T>(const char* label_id, const T* values, int count, double y_ref, double xscale, double x0, ImPlotShadedFlags flags, int offset, int stride); \
     template IMPLOT_API void PlotShaded<T>(const char* label_id, const T* xs, const T* ys, int count, double y_ref, ImPlotShadedFlags flags, int offset, int stride); \
     template IMPLOT_API void PlotShaded<T>(const char* label_id, const T* xs, const T* ys1, const T* ys2, int count, ImPlotShadedFlags flags, int offset, int stride);
 CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
+#undef INSTANTIATE_MACRO
+
+// Mixed-type instantiation
+#define INSTANTIATE_MACRO(T, U) \
+    template IMPLOT_API void PlotShaded<T, U>(const char* label_id, const T* xs, const U* ys1, const U* ys2, int count, ImPlotShadedFlags flags, int offset, int stride_x, int stride_y); \
+
+_FOR_EACH_XY(INSTANTIATE_MACRO)
 #undef INSTANTIATE_MACRO
 
 // custom

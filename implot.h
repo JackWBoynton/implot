@@ -77,6 +77,7 @@
 #define IMPLOT_AUTO_COL ImVec4(0,0,0,-1)
 // Macro for templated plotting functions; keeps header clean.
 #define IMPLOT_TMP template <typename T> IMPLOT_API
+#define IMPLOT_TMP2 template <typename T, typename U> IMPLOT_API
 
 //-----------------------------------------------------------------------------
 // [SECTION] Enums and Types
@@ -903,6 +904,7 @@ IMPLOT_API void SetNextAxesToFit();
 // Plots a standard 2D line plot.
 IMPLOT_TMP void PlotLine(const char* label_id, const T* values, int count, double xscale=1, double xstart=0, ImPlotLineFlags flags=0, int offset=0, int stride=sizeof(T));
 IMPLOT_TMP void PlotLine(const char* label_id, const T* xs, const T* ys, int count, ImPlotLineFlags flags=0, int offset=0, int stride=sizeof(T));
+IMPLOT_TMP2 void PlotLine(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags=0, int offset=0, int stride_x=sizeof(T), int stride_y=sizeof(U));
 IMPLOT_API void PlotLineG(const char* label_id, ImPlotGetter getter, void* data, int count, ImPlotLineFlags flags=0);
 
 // Plots a standard 2D scatter plot. Default marker is ImPlotMarker_Circle.
@@ -919,6 +921,7 @@ IMPLOT_API void PlotStairsG(const char* label_id, ImPlotGetter getter, void* dat
 IMPLOT_TMP void PlotShaded(const char* label_id, const T* values, int count, double yref=0, double xscale=1, double xstart=0, ImPlotShadedFlags flags=0, int offset=0, int stride=sizeof(T));
 IMPLOT_TMP void PlotShaded(const char* label_id, const T* xs, const T* ys, int count, double yref=0, ImPlotShadedFlags flags=0, int offset=0, int stride=sizeof(T));
 IMPLOT_TMP void PlotShaded(const char* label_id, const T* xs, const T* ys1, const T* ys2, int count, ImPlotShadedFlags flags=0, int offset=0, int stride=sizeof(T));
+IMPLOT_TMP2 void PlotShaded(const char* label_id, const T* xs, const U* ys1, const U* ys2, int count, ImPlotShadedFlags flags=0, int offset=0, int stride_x=sizeof(T), int stride_y=sizeof(U));
 IMPLOT_API void PlotShadedG(const char* label_id, ImPlotGetter getter1, void* data1, ImPlotGetter getter2, void* data2, int count, ImPlotShadedFlags flags=0);
 
 // Plots a bar graph. Vertical by default. #bar_size and #shift are in plot units.
