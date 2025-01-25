@@ -91,7 +91,7 @@ static IMPLOT_INLINE float  ImInvSqrt(float x) { return 1.0f / sqrtf(x); }
 #ifdef IMPLOT_CUSTOM_NUMERIC_TYPES
     #define IMPLOT_NUMERIC_TYPES IMPLOT_CUSTOM_NUMERIC_TYPES
 #else
-    #define IMPLOT_NUMERIC_TYPES (ImS8)(ImU8)(ImS16)(ImU16)(ImS32)(ImU32)(ImS64)(ImU64)(float)(double)(uint8_t)
+    #define IMPLOT_NUMERIC_TYPES (ImS8)(ImU8)(ImS16)(ImU16)(ImS32)(ImU32)(ImS64)(ImU64)(float)(double)
 #endif
 
 // CALL_INSTANTIATE_FOR_NUMERIC_TYPES will duplicate the template instantion code `INSTANTIATE_MACRO(T)` on supported types.
@@ -110,12 +110,12 @@ static IMPLOT_INLINE float  ImInvSqrt(float x) { return 1.0f / sqrtf(x); }
 #define _FOR_EACH_Y(T, macro) \
     macro(T, float)           \
     macro(T, double)          \
-    macro(T, int)            \
-    macro(T, unsigned int)   \
-    macro(T, short)          \
-    macro(T, unsigned short) \
-    macro(T, char)           \
-    macro(T, unsigned char)  \
+    macro(T, int)             \
+    macro(T, unsigned int)    \
+    macro(T, short)           \
+    macro(T, unsigned short)  \
+    macro(T, char)            \
+    macro(T, unsigned char)   \
     macro(T, long long)
 
 // Iterate over all X types
