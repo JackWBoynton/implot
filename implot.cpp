@@ -695,6 +695,7 @@ bool ShowLegendEntries(ImPlotItemGroup& items, const ImRect& legend_bb, bool hov
         gp.SortItems = &items;
         qsort(indices.Data, num_items, sizeof(int), LegendSortingComp);
     }
+    bool ctrl_down =  ImGui::IsKeyDown(ImGuiKey_ModCtrl);
     // render
     for (int i = 0; i < num_items; ++i) {
         const int idx           = indices[i];
@@ -727,9 +728,17 @@ bool ShowLegendEntries(ImPlotItemGroup& items, const ImRect& legend_bb, bool hov
         if (item_hov || item_hld)
             PREVENT_PLOT_DRAGGING_IN_NODE_EDITOR;
 
-        if (item_clk)
-            item->Show = !item->Show;
-
+        if (item_clk) {
+            if (ctrl_down) {
+                // hide all others
+                for (int j = 0; j < num_items; ++j)
+                    items.GetLegendItem(j)->Show = false;
+                item->Show = true;
+            }
+            else {
+                item->Show = !item->Show;
+            }
+        }
 
         const bool can_hover = (item_hov)
                              && (!ImHasFlag(items.Legend.Flags, ImPlotLegendFlags_NoHighlightItem)
