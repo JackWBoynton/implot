@@ -510,165 +510,9 @@ void EndItem() {
     gp.CurrentItem  = nullptr;
 }
 
-//-----------------------------------------------------------------------------
-// [SECTION] Indexers
-//-----------------------------------------------------------------------------
 
-template <typename T>
-IMPLOT_INLINE T IndexData(const T* data, int idx, int count, int offset, int stride) {
-    const int s = ((offset == 0) << 0) | ((stride == sizeof(T)) << 1);
-    switch (s) {
-        case 3 : return data[idx];
-        case 2 : return data[(offset + idx) % count];
-        case 1 : return *(const T*)(const void*)((const unsigned char*)data + (size_t)((idx) ) * stride);
-        case 0 : return *(const T*)(const void*)((const unsigned char*)data + (size_t)((offset + idx) % count) * stride);
-        default: return T(0);
-    }
-}
 
-template <typename T>
-struct IndexerIdx {
-    IndexerIdx(const T* data, int count, int offset = 0, int stride = sizeof(T)) :
-        Data(data),
-        Count(count),
-        Offset(count ? ImPosMod(offset, count) : 0),
-        Stride(stride)
-    { }
-    template <typename I> IMPLOT_INLINE double operator()(I idx) const {
-        return (double)IndexData(Data, idx, Count, Offset, Stride);
-    }
-    const T* Data;
-    int Count;
-    int Offset;
-    int Stride;
-};
 
-template <typename _Indexer1, typename _Indexer2>
-struct IndexerAdd {
-    IndexerAdd(const _Indexer1& indexer1, const _Indexer2& indexer2, double scale1 = 1, double scale2 = 1)
-        : Indexer1(indexer1),
-          Indexer2(indexer2),
-          Scale1(scale1),
-          Scale2(scale2),
-          Count(ImMin(Indexer1.Count, Indexer2.Count))
-    { }
-    template <typename I> IMPLOT_INLINE double operator()(I idx) const {
-        return Scale1 * Indexer1(idx) + Scale2 * Indexer2(idx);
-    }
-    const _Indexer1& Indexer1;
-    const _Indexer2& Indexer2;
-    double Scale1;
-    double Scale2;
-    int Count;
-};
-
-struct IndexerLin {
-    IndexerLin(double m, double b) : M(m), B(b) { }
-    template <typename I> IMPLOT_INLINE double operator()(I idx) const {
-        return M * idx + B;
-    }
-    const double M;
-    const double B;
-};
-
-struct IndexerConst {
-    IndexerConst(double ref) : Ref(ref) { }
-    template <typename I> IMPLOT_INLINE double operator()(I) const { return Ref; }
-    const double Ref;
-};
-
-//-----------------------------------------------------------------------------
-// [SECTION] Getters
-//-----------------------------------------------------------------------------
-
-template <typename _IndexerX, typename _IndexerY>
-struct GetterXY {
-    GetterXY(_IndexerX x, _IndexerY y, int count) : IndxerX(x), IndxerY(y), Count(count) { }
-    template <typename I> IMPLOT_INLINE ImPlotPoint operator()(I idx) const {
-        return ImPlotPoint(IndxerX(idx),IndxerY(idx));
-    }
-    const _IndexerX IndxerX;
-    const _IndexerY IndxerY;
-    const int Count;
-};
-
-/// Interprets a user's function pointer as ImPlotPoints
-struct GetterFuncPtr {
-    GetterFuncPtr(ImPlotGetter getter, void* data, int count) :
-        Getter(getter),
-        Data(data),
-        Count(count)
-    { }
-    template <typename I> IMPLOT_INLINE ImPlotPoint operator()(I idx) const {
-        return Getter(idx, Data);
-    }
-    ImPlotGetter Getter;
-    void* const Data;
-    const int Count;
-};
-
-template <typename _Getter>
-struct GetterOverrideX {
-    GetterOverrideX(_Getter getter, double x) : Getter(getter), X(x), Count(getter.Count) { }
-    template <typename I> IMPLOT_INLINE ImPlotPoint operator()(I idx) const {
-        ImPlotPoint p = Getter(idx);
-        p.x = X;
-        return p;
-    }
-    const _Getter Getter;
-    const double X;
-    const int Count;
-};
-
-template <typename _Getter>
-struct GetterOverrideY {
-    GetterOverrideY(_Getter getter, double y) : Getter(getter), Y(y), Count(getter.Count) { }
-    template <typename I> IMPLOT_INLINE ImPlotPoint operator()(I idx) const {
-        ImPlotPoint p = Getter(idx);
-        p.y = Y;
-        return p;
-    }
-    const _Getter Getter;
-    const double Y;
-    const int Count;
-};
-
-template <typename _Getter>
-struct GetterLoop {
-    GetterLoop(_Getter getter) : Getter(getter), Count(getter.Count + 1) { }
-    template <typename I> IMPLOT_INLINE ImPlotPoint operator()(I idx) const {
-        idx = idx % (Count - 1);
-        return Getter(idx);
-    }
-    const _Getter Getter;
-    const int Count;
-};
-
-template <typename T>
-struct GetterError {
-    GetterError(const T* xs, const T* ys, const T* neg, const T* pos, int count, int offset, int stride) :
-        Xs(xs),
-        Ys(ys),
-        Neg(neg),
-        Pos(pos),
-        Count(count),
-        Offset(count ? ImPosMod(offset, count) : 0),
-        Stride(stride)
-    { }
-    template <typename I> IMPLOT_INLINE ImPlotPointError operator()(I idx) const {
-        return ImPlotPointError((double)IndexData(Xs,  idx, Count, Offset, Stride),
-                                (double)IndexData(Ys,  idx, Count, Offset, Stride),
-                                (double)IndexData(Neg, idx, Count, Offset, Stride),
-                                (double)IndexData(Pos, idx, Count, Offset, Stride));
-    }
-    const T* const Xs;
-    const T* const Ys;
-    const T* const Neg;
-    const T* const Pos;
-    const int Count;
-    const int Offset;
-    const int Stride;
-};
 
 //-----------------------------------------------------------------------------
 // [SECTION] Fitters
@@ -1657,6 +1501,12 @@ void PlotLine(const char* label_id, const T* xs, const U* ys, int count, ImPlotL
     PlotLineEx(label_id, getter, flags);
 }
 
+template <typename T, typename U>
+void PlotLineXY(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags, int offset_x, int offset_y, int stride_x, int stride_y) {
+    GetterXY<IndexerIdx<T>, IndexerIdx<U>> getter(IndexerIdx<T>(xs, count, offset_x, stride_x), IndexerIdx<U>(ys, count, offset_y, stride_y), count);
+    PlotLineEx(label_id, getter, flags);
+}
+
 #define INSTANTIATE_MACRO(T) \
     template IMPLOT_API void PlotLine<T> (const char* label_id, const T* values, int count, double xscale, double x0, ImPlotLineFlags flags, int offset, int stride); \
     template IMPLOT_API void PlotLine<T>(const char* label_id, const T* xs, const T* ys, int count, ImPlotLineFlags flags, int offset, int stride);
@@ -1666,6 +1516,7 @@ CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
 // Mixed-type instantiation
 #define INSTANTIATE_MACRO(T, U) \
     template IMPLOT_API void PlotLine<T, U>(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags, int offset, int stride_x, int stride_y); \
+    template IMPLOT_API void PlotLineXY<T, U>(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags, int offset_x, int offset_y, int stride_x, int stride_y); \
 
 _FOR_EACH_XY(INSTANTIATE_MACRO) // needs the newline above
 #undef INSTANTIATE_MACRO
@@ -1718,6 +1569,18 @@ void PlotScatter(const char* label_id, const T* xs, const T* ys, int count, ImPl
     template IMPLOT_API void PlotScatter<T>(const char* label_id, const T* values, int count, double xscale, double x0, ImPlotScatterFlags flags, int offset, int stride); \
     template IMPLOT_API void PlotScatter<T>(const char* label_id, const T* xs, const T* ys, int count, ImPlotScatterFlags flags, int offset, int stride);
 CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
+#undef INSTANTIATE_MACRO
+
+template <typename T, typename U>
+void PlotScatter(const char* label_id, const T* xs, const U* ys, int count, ImPlotScatterFlags flags, int offset_x, int offset_y, int stride_x, int stride_y) {
+    GetterXY<IndexerIdx<T>, IndexerIdx<U>> getter(IndexerIdx<T>(xs, count, offset_x, stride_x), IndexerIdx<U>(ys, count, offset_y, stride_y), count);
+    PlotScatterEx(label_id, getter, flags);
+}
+
+#define INSTANTIATE_MACRO(T, U) \
+    template IMPLOT_API void PlotScatter<T, U>(const char* label_id, const T* xs, const U* ys, int count, ImPlotScatterFlags flags, int offset_x, int offset_y, int stride_x, int stride_y); \
+
+_FOR_EACH_XY(INSTANTIATE_MACRO) // needs the newline above
 #undef INSTANTIATE_MACRO
 
 // custom
@@ -1953,6 +1816,27 @@ void PlotBars(const char* label_id, const T* xs, const T* ys, int count, double 
     template IMPLOT_API void PlotBars<T>(const char* label_id, const T* xs, const T* ys, int count, double bar_size, ImPlotBarsFlags flags, int offset, int stride);
 CALL_INSTANTIATE_FOR_NUMERIC_TYPES()
 #undef INSTANTIATE_MACRO
+
+template<typename T, typename U>
+void PlotBars(const char* label_id, const T* xs, const U* ys, int count, double bar_size, ImPlotBarsFlags flags, int offset, int stride_x, int stride_y) {
+    if (ImHasFlag(flags, ImPlotBarsFlags_Horizontal)) {
+        GetterXY<IndexerIdx<T>, IndexerIdx<U>> getter1(IndexerIdx<T>(xs, count, offset, stride_x), IndexerIdx<U>(ys, count, offset, stride_y), count);
+        GetterXY<IndexerConst, IndexerIdx<U>> getter2(IndexerConst(0), IndexerIdx<U>(ys, count, offset, stride_y), count);
+        PlotBarsHEx(label_id, getter1, getter2, bar_size, flags);
+    }
+    else {
+        GetterXY<IndexerIdx<T>, IndexerIdx<U>> getter1(IndexerIdx<T>(xs, count, offset, stride_x), IndexerIdx<U>(ys, count, offset, stride_y), count);
+        GetterXY<IndexerIdx<T>, IndexerConst>  getter2(IndexerIdx<T>(xs,count,offset,stride_x), IndexerConst(0), count);
+        PlotBarsVEx(label_id, getter1,getter2,bar_size,flags);
+    }
+}
+
+#define INSTANTIATE_MACRO(T, U) \
+    template IMPLOT_API void PlotBars<T, U>(const char* label_id, const T* xs, const U* ys, int count, double bar_size, ImPlotBarsFlags flags, int offset, int stride_x, int stride_y);
+
+_FOR_EACH_XY(INSTANTIATE_MACRO)
+#undef INSTANTIATE_MACRO
+
 
 void PlotBarsG(const char* label_id, ImPlotGetter getter_func, void* data, int count, double bar_size, ImPlotBarsFlags flags) {
     if (ImHasFlag(flags, ImPlotBarsFlags_Horizontal)) {

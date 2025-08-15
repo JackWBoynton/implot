@@ -905,11 +905,13 @@ IMPLOT_API void SetNextAxesToFit();
 IMPLOT_TMP void PlotLine(const char* label_id, const T* values, int count, double xscale=1, double xstart=0, ImPlotLineFlags flags=0, int offset=0, int stride=sizeof(T));
 IMPLOT_TMP void PlotLine(const char* label_id, const T* xs, const T* ys, int count, ImPlotLineFlags flags=0, int offset=0, int stride=sizeof(T));
 IMPLOT_TMP2 void PlotLine(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags=0, int offset=0, int stride_x=sizeof(T), int stride_y=sizeof(U));
+IMPLOT_TMP2 void PlotLineXY(const char* label_id, const T* xs, const U* ys, int count, ImPlotLineFlags flags, int offset_x, int offset_y, int stride_x=sizeof(T), int stride_y=sizeof(U));
 IMPLOT_API void PlotLineG(const char* label_id, ImPlotGetter getter, void* data, int count, ImPlotLineFlags flags=0);
 
 // Plots a standard 2D scatter plot. Default marker is ImPlotMarker_Circle.
 IMPLOT_TMP void PlotScatter(const char* label_id, const T* values, int count, double xscale=1, double xstart=0, ImPlotScatterFlags flags=0, int offset=0, int stride=sizeof(T));
 IMPLOT_TMP void PlotScatter(const char* label_id, const T* xs, const T* ys, int count, ImPlotScatterFlags flags=0, int offset=0, int stride=sizeof(T));
+IMPLOT_TMP2 void PlotScatter(const char* label_id, const T* xs, const U* ys, int count, ImPlotScatterFlags flags=0, int offset_x=0, int offset_y=0, int stride_x=sizeof(T), int stride_y=sizeof(U));
 IMPLOT_API void PlotScatterG(const char* label_id, ImPlotGetter getter, void* data, int count, ImPlotScatterFlags flags=0);
 
 // Plots a a stairstep graph. The y value is continued constantly to the right from every x position, i.e. the interval [x[i], x[i+1]) has the value y[i]
@@ -927,6 +929,7 @@ IMPLOT_API void PlotShadedG(const char* label_id, ImPlotGetter getter1, void* da
 // Plots a bar graph. Vertical by default. #bar_size and #shift are in plot units.
 IMPLOT_TMP void PlotBars(const char* label_id, const T* values, int count, double bar_size=0.67, double shift=0, ImPlotBarsFlags flags=0, int offset=0, int stride=sizeof(T));
 IMPLOT_TMP void PlotBars(const char* label_id, const T* xs, const T* ys, int count, double bar_size, ImPlotBarsFlags flags=0, int offset=0, int stride=sizeof(T));
+IMPLOT_TMP2 void PlotBars(const char* label_id, const T* xs, const U* ys, int count, double bar_size, ImPlotBarsFlags flags=0, int offset=0, int stride_x=sizeof(T), int stride_y=sizeof(U));
 IMPLOT_API void PlotBarsG(const char* label_id, ImPlotGetter getter, void* data, int count, double bar_size, ImPlotBarsFlags flags=0);
 
 // Plots a group of bars. #values is a row-major matrix with #item_count rows and #group_count cols. #label_ids should have #item_count elements.
