@@ -116,7 +116,7 @@ static IMPLOT_INLINE float  ImInvSqrt(float x) { return 1.0f / sqrtf(x); }
     macro(T, unsigned short)  \
     macro(T, char)            \
     macro(T, unsigned char)   \
-    macro(T, long long) \
+    macro(T, long long)       \
     macro(T, unsigned long long)
 
 // Iterate over all X types
