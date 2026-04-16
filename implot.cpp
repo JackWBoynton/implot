@@ -736,10 +736,27 @@ bool ShowLegendEntries(ImPlotItemGroup& items, const ImRect& legend_bb, bool hov
 
         if (item_clk) {
             if (ctrl_down) {
-                // hide all others
-                for (int j = 0; j < num_items; ++j)
-                    items.GetLegendItem(j)->Show = false;
-                item->Show = true;
+                // check if this item is already the only one shown
+                bool only_this_shown = item->Show;
+                if (only_this_shown) {
+                    for (int j = 0; j < num_items; ++j) {
+                        if (j != idx && items.GetLegendItem(j)->Show) {
+                            only_this_shown = false;
+                            break;
+                        }
+                    }
+                }
+                if (only_this_shown) {
+                    // restore all
+                    for (int j = 0; j < num_items; ++j)
+                        items.GetLegendItem(j)->Show = true;
+                }
+                else {
+                    // isolate: hide all others
+                    for (int j = 0; j < num_items; ++j)
+                        items.GetLegendItem(j)->Show = false;
+                    item->Show = true;
+                }
             }
             else {
                 item->Show = !item->Show;
@@ -4380,7 +4397,8 @@ bool BeginLegendPopup(const char* label_id, ImGuiMouseButton mouse_button) {
     if (window->SkipItems)
         return false;
     ImGuiID id = ImGui::GetIDWithSeed(label_id, nullptr, gp.CurrentItems->ID);
-    if (ImGui::IsMouseReleased(mouse_button)) {
+    bool is_open = ImGui::IsPopupOpen(id, 0);
+    if (ImGui::IsMouseReleased(mouse_button) && !is_open) {
         ImPlotItem* item = gp.CurrentItems->GetItem(id);
         if (item && item->LegendHovered)
             ImGui::OpenPopupEx(id);
