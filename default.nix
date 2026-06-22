@@ -1,9 +1,10 @@
 {
-  lib,
-  stdenv,
-  callPackage,
-  cmake,
-  imgui,
+  pkgs ? import <nixpkgs> { },
+  lib ? pkgs.lib,
+  stdenv ? pkgs.stdenv,
+  callPackage ? pkgs.callPackage,
+  cmake ? pkgs.cmake,
+  imgui ? pkgs.imgui,
 }:
 
 stdenv.mkDerivation {
