@@ -4,6 +4,7 @@
   stdenv ? pkgs.stdenv,
   callPackage ? pkgs.callPackage,
   cmake ? pkgs.cmake,
+  freetype ? pkgs.freetype,
   imgui ? pkgs.imgui,
 }:
 
@@ -13,7 +14,7 @@ stdenv.mkDerivation {
 
   src = lib.cleanSource ./.;
 
-  buildInputs = [ imgui ];
+  buildInputs = [ imgui freetype ];
   nativeBuildInputs = [ cmake ];
 
   passthru.tests = {
