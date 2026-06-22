@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.8)
 project(implot CXX)
 
+find_package(Freetype QUIET)
 find_package(imgui CONFIG REQUIRED)
 
 include(GNUInstallDirs)
